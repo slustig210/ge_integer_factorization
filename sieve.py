@@ -1,0 +1,95 @@
+DEFAULT_EXTEND_PRIMES = 100
+
+
+def sieve_of_eratosthenes(n: int):
+    """Creates a list of size n + 1 where l[i] is True iff
+    i is a prime number.
+
+    Args:
+        n (int): The size of the sieve
+
+    Raises:
+        ValueError: when n is less than 2
+
+    Returns:
+        list[bool]: a list of size n + 1 where l[i] is True iff
+                    i is a prime number
+    """
+
+    if n < 2:
+        raise ValueError("n must be at least 2")
+
+    sieve = [True] * (n + 1)
+    sieve[0] = False
+    sieve[1] = False
+
+    for i in range(2, n // 2 + 1):
+        if not sieve[i]:
+            continue
+
+        for j in range(2 * i, n + 1, i):
+            sieve[j] = False
+
+    return sieve
+
+
+def extend_primes(primes: list[int], new_max: int | None = None):
+    """Given a list of all primes from 2 to primes[-1], generate all primes
+    from primes[-1] + 2 to new_max, and append it to the previous list.
+    Basically perform one segment of the segmented Sieve of Eratosthenes,
+    which is a more memory efficient version of the sieve.
+
+    Args:
+        primes (list[int]): A list of all primes from 2 to primes[-1]. Can be empty
+        new_max (int | None, optional): The new maximum value of a prime in the list.
+                Defaults to None, in which case 2 * primes[-1] is used.
+
+    Raises:
+        ValueError: when new_max is less than 2
+    """
+
+    if new_max and new_max < 2:
+        raise ValueError("new_max must be at least 2")
+
+    if not primes:
+        primes += generate_primes(new_max if new_max else DEFAULT_EXTEND_PRIMES)
+        return
+
+    if new_max == None:
+        new_max = 2 * primes[-1]
+    elif new_max <= primes[-1]:
+        return
+
+    sieve = [True] * (new_max - primes[-1])
+
+    for prime in primes:
+        if prime > new_max // 2:
+            break
+
+        for i in range(primes[-1] - (primes[-1] % prime) + prime, new_max + 1,
+                       prime):
+            sieve[i - primes[-1] - 1] = False
+
+    for i in range(primes[-1] + 1, new_max // 2 + 1):
+        if not sieve[i - primes[-1] - 1]:
+            continue
+
+        for j in range(2 * i, new_max + 1, i):
+            sieve[j - primes[-1] - 1] = False
+
+    primes.extend(
+        i for i, is_prime in enumerate(sieve, primes[-1] + 1) if is_prime)
+
+
+def generate_primes(n: int):
+    """Find all primes between 2 and n
+
+    Args:
+        n (int): the maximum number to find primes at
+
+    Returns:
+        list[int]: a list of all primes between 2 and n
+    """
+    return [
+        i for i, is_prime in enumerate(sieve_of_eratosthenes(n)) if is_prime
+    ]
