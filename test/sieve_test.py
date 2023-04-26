@@ -1,7 +1,8 @@
 import unittest
-from sieve import generate_primes, extend_primes, DEFAULT_EXTEND_PRIMES
-
+import gzip
 from pathlib import Path
+
+from sieve import generate_primes, extend_primes, DEFAULT_EXTEND_PRIMES
 
 
 class InternetPrimesTests(unittest.TestCase):
@@ -9,28 +10,12 @@ class InternetPrimesTests(unittest.TestCase):
     def setUp(self):
         self.internet_primes: list[int] = []
 
-        with open(Path(__file__).parent.joinpath('prime_numbers.txt')) as f:
-            # some lines end in a newline in the middle of a number!
-            carry = ''
-
-            for line in f:
-                if line == '\n':
-                    continue
-
-                numbers = [s for s in line.rstrip().split(",") if s]
-                if carry:
-                    numbers[0] = carry + numbers[0]
-
-                if line[-2] != ',':
-                    carry = numbers[-1]
-                    numbers.pop()
-                else:
-                    carry = ''
-
-                self.internet_primes.extend(int(s) for s in numbers)
-
-            if carry:
-                self.internet_primes.append(int(carry))
+        with gzip.open(Path(__file__).parent.joinpath('prime_numbers.gz')) as f:
+            while f._checkClosed:
+                val = f.read(4)
+                if not val:
+                    break
+                self.internet_primes.append(int.from_bytes(val, 'little'))
 
     def test_sieve_matches_expected(self):
         my_primes = generate_primes(self.internet_primes[-1])

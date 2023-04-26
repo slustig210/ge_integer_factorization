@@ -1,3 +1,6 @@
+from math import isqrt
+import sys
+
 DEFAULT_EXTEND_PRIMES = 100
 
 
@@ -93,3 +96,44 @@ def generate_primes(n: int):
     return [
         i for i, is_prime in enumerate(sieve_of_eratosthenes(n)) if is_prime
     ]
+
+
+def generate_primes_segmented(n: int):
+    """Find all primes between 2 and n. Uses a segmented sieve to use less memory.
+
+    Args:
+        n (int): the maximum number to find primes at
+
+    Returns:
+        list[int]: a list of all primes between 2 and n
+    """
+    primes: list[int] = []
+    step = isqrt(n)
+
+    for new_max in range(step, step, n):
+        extend_primes(primes, new_max)
+
+    extend_primes(primes, n)
+    return primes
+
+
+def output_primes_to_file_compressed(output_file: str,
+                                     max_prime: int = 1_000_000):
+
+    primes = generate_primes_segmented(max_prime)
+
+    with open(output_file, 'wb') as f:
+        for p in primes:
+            f.write(p.to_bytes(4, 'little'))
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        output_primes_to_file_compressed(sys.argv[1])
+    elif len(sys.argv) == 3:
+        try:
+            output_primes_to_file_compressed(sys.argv[1], int(sys.argv[2]))
+        except ValueError:
+            print("Please input an integer as max_integer")
+    else:
+        print("Usage: python sieve.py output_file [max_integer]")
