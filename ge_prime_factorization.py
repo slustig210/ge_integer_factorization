@@ -1,55 +1,7 @@
 from typing import TypeVar
 
 from ge_integers import GEInteger, GaussianInteger, EisensteinInteger
-from sieve import extend_primes
-
-PRIMES: list[int] = []
-
-
-def factor_integer(n: int):
-    """Factor an integer in
-
-    Args:
-        n (int): 
-
-    Raises:
-        ValueError: 
-
-    Returns:
-        dict[int, int]: 
-    """
-
-    factorization = list[tuple[int, int]]()
-
-    if n < 1:
-        raise ValueError(
-            "factor_integer requires a positive integer as the first argument")
-
-    if n == 1:
-        return factorization
-
-    i = 0
-    while True:
-        if i >= len(PRIMES):
-            # could potentially make this (and PRIMES) a parameter to
-            # try different prime generators
-            extend_primes(PRIMES)
-
-        prime = PRIMES[i]
-
-        num_divisions = 0
-        while n % prime == 0:
-            n //= prime
-            num_divisions += 1
-
-        if num_divisions != 0:
-            factorization.append((prime, num_divisions))
-
-        if n == 1:
-            return factorization
-
-        i += 1
-
+from sympy.ntheory import factorint
 
 T = TypeVar("T", bound=GEInteger)
 
@@ -59,7 +11,9 @@ def factor_ge_integer(z: T) -> list[tuple[T, int]]:
 
     typ = type(z)
 
-    for p, count in factor_integer(z.norm()):
+    norm_factorization: dict[int, int] = factorint(z.norm())
+
+    for p, count in norm_factorization.items():
         if typ.ramifies(p):
             # evenly split between factor and its conjugate
             # using the fact that 1-i and 1-w are both type (R) as a shortcut
@@ -92,7 +46,7 @@ def factor_ge_integer(z: T) -> list[tuple[T, int]]:
         # either factor or its conjugate divides z
         # idk if this part could be sped up
         num_divisions = 0
-        while num_divisions <= count:
+        while num_divisions < count:
             q1 = z // factor
             if q1 * factor == z:
                 z = q1
@@ -116,3 +70,69 @@ def factor_ge_integer(z: T) -> list[tuple[T, int]]:
         factorization = [(z, 1)] + factorization
 
     return factorization
+
+
+def factor_and_print_ge_integer(z: GEInteger):
+    l = factor_ge_integer(z)
+
+    strs = []
+    for p, e in l:
+        s = str(p)
+        if e == 1:
+            strs.append(s)
+            continue
+
+        if s[0] != '(':
+            s = f'({s})'
+
+        strs.append(f'{s}^{e}')
+
+    print(f"{z} = " + " * ".join(strs))
+
+    # double check the product
+    prod = type(z)(1)
+    for p, e in l:
+        prod *= p**e
+
+    assert z == prod
+
+
+def main():
+    print("\nFactor a G/E Integer!")
+    while True:
+        print("\n[1] Gaussian Integer\n[2] Eisenstein Integer\n[3] Exit\n")
+        choice_str = input("Pick a choice: ")
+        try:
+            choice = int(choice_str)
+        except ValueError:
+            choice = 0
+
+        if not (1 <= choice <= 3):
+            print("Please enter a valid choice (1, 2, 3)")
+            continue
+
+        if choice == 3:
+            break
+
+        if choice == 1:
+            typ = GaussianInteger
+            print("Enter a Gaussian integer to factor (ex: 5 + 8i):")
+        else:
+            typ = EisensteinInteger
+            print("Enter an Eisenstein integer to factor (ex: 5 + 8w):")
+
+        z_str = input()
+
+        try:
+            z = typ.from_string(z_str)
+        except ValueError:
+            print("Please enter a valid input for " + typ.__name__)
+            continue
+
+        print(f"Input: {z}")
+
+        factor_and_print_ge_integer(z)
+
+
+if __name__ == '__main__':
+    main()
