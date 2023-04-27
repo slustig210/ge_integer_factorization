@@ -154,6 +154,7 @@ class GEInteger(ABC):
 
     @classmethod
     def factor_type_s(cls: Type[TGEInt], p: int) -> TGEInt:
+        """Finds a G/E prime which divides p, given that p splits."""
         ...
 
 

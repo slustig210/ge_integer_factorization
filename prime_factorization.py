@@ -90,7 +90,7 @@ def factor_ge_integer(z: T) -> list[tuple[T, int]]:
         factor = typ.factor_type_s(p)
 
         # either factor or its conjugate divides z
-        # idk if this could be sped up
+        # idk if this part could be sped up
         num_divisions = 0
         while num_divisions <= count:
             q1 = z // factor
