@@ -30,7 +30,7 @@ def sieve_of_eratosthenes(n: int):
         if not sieve[i]:
             continue
 
-        for j in range(2 * i, n + 1, i):
+        for j in range(i**2, n + 1, i):
             sieve[j] = False
 
     return sieve
@@ -77,7 +77,7 @@ def extend_primes(primes: list[int], new_max: int | None = None):
         if not sieve[i - primes[-1] - 1]:
             continue
 
-        for j in range(2 * i, new_max + 1, i):
+        for j in range(i**2, new_max + 1, i):
             sieve[j - primes[-1] - 1] = False
 
     primes.extend(
