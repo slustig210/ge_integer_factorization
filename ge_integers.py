@@ -110,10 +110,13 @@ class GEInteger(ABC):
         return type(self)((numerator._x + denominator // 2) // denominator,
                           (numerator._y + denominator // 2) // denominator)
 
-        # should be equivalent to:
+        # should be "almost" equivalent to:
         # round(numerator._x / denominator)
         # round(numerator._y / denominator)
+        # may handle 50-50 cases differently, but that is okay
         # https://stackoverflow.com/questions/3950372/round-with-integer-division
+
+        # and therefore this algorithm divides with minimal remainder :)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(x={self._x}, y={self._y})"
