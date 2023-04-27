@@ -107,8 +107,13 @@ class GEInteger(ABC):
         numerator = self * other.conj()
         denominator = other.norm()
 
-        return self.__class__(round(numerator._x / denominator),
-                              round(numerator._y / denominator))
+        return type(self)((numerator._x + denominator // 2) // denominator,
+                          (numerator._y + denominator // 2) // denominator)
+
+        # should be equivalent to:
+        # round(numerator._x / denominator)
+        # round(numerator._y / denominator)
+        # https://stackoverflow.com/questions/3950372/round-with-integer-division
 
     def __repr__(self):
         return f"{self.__class__.__name__}(x={self._x}, y={self._y})"
