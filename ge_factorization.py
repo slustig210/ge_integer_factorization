@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from ge_integers import GEInteger, GaussianInteger, EisensteinInteger
-from sympy.ntheory import factorint
+from sympy import factorint
 
 T = TypeVar("T", bound=GEInteger)
 
