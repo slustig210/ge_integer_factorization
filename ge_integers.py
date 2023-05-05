@@ -62,17 +62,24 @@ class GEInteger(ABC):
         if exponent < 0:
             raise ValueError("exponent must be a non-negative integer")
 
-        base = self
-        ret = type(self)(1)
+        if exponent == 1:
+            return self
 
-        while exponent != 0:
+        a = type(self)(1)
+
+        if exponent == 0:
+            return a
+
+        base = self
+
+        while exponent != 1:
             if exponent % 2 == 1:
-                ret *= base
+                a *= base
 
             base *= base
             exponent //= 2
 
-        return ret
+        return a * base
 
     @classmethod
     def from_string(cls: Type[TGEInt], s: str, /) -> TGEInt:

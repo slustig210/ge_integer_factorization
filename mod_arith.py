@@ -1,10 +1,8 @@
-# TODO page numbers wrong
-
-# follows the pseudocode in Prime Numbers: A Computational Perspective, page 112 in the pdf
-# Algorithm 2.1.5
 import random
 
 
+# follows the pseudocode in Prime Numbers: A Computational Perspective, page 98
+# Algorithm 2.3.5
 def jacobi_symbol(a: int, m: int):
     """Calculate the Jacobi symbol (a/m)
 
@@ -45,9 +43,9 @@ def jacobi_symbol(a: int, m: int):
     return 0
 
 
-# follows the pseudocode in Prime Numbers: A Computational Perspective, page 468
+# follows the pseudocode in Prime Numbers: A Computational Perspective, page 459
 # Algorithm 9.3.2
-# turns out python has a builtin pow() that does this... I forgot
+# pow is a python builtin, this alg is equivalent to pow(base, exponent, modulus)
 def modular_pow(base: int, exponent: int, modulus: int):
     """Computes base**exponent mod modulus by repeated squaring and multiplication.
 
@@ -73,21 +71,27 @@ def modular_pow(base: int, exponent: int, modulus: int):
     if modulus == 1:
         return 0
 
-    ret = 1
+    a = 1
     base %= modulus
 
-    while exponent != 0:
+    if exponent == 0:
+        return 1
+
+    if base == 0:
+        return 0
+
+    while exponent != 1:
         if exponent % 2 == 1:
-            ret = (ret * base) % modulus
+            a = (a * base) % modulus
 
         base = (base**2) % modulus
         exponent //= 2
 
-    return ret
+    return (a * base) % modulus
 
 
-# follows pseudocode of
-# algorithm 9.2.11 from the book
+# follows pseudocode of algorithm 9.2.11, page 454, from the book
+# equivalent to python's math.isqrt
 def isqrt(n: int):
     if n < 0:
         raise ValueError("cannot take the square root of a negative integer")
@@ -102,7 +106,7 @@ def isqrt(n: int):
         x = y
 
 
-# follows the pseudocode in Prime Numbers: A Computational Perspective, page 114
+# follows the pseudocode in Prime Numbers: A Computational Perspective, page 100
 # Algorithm 2.3.8
 # assumes p is prime and (a/p) = 1
 def tonelli_shanks(a: int, p: int):
@@ -138,7 +142,7 @@ def tonelli_shanks(a: int, p: int):
     # usually takes 2 tries, since about half of the
     # range is made up of quadratic nonresidues
     while True:
-        d = random.randint(2, p - 1)
+        d = random.randint(2, p - 2)  # p >= 11 so this should work
         if jacobi_symbol(d, p) == -1:
             break
 
@@ -170,15 +174,18 @@ def cornacchias(d: int, p: int):
 
     Args:
         d (int): Any positive integer less than p
-        p (int): Any prime
+        p (int): Any odd prime
 
     Raises:
         ValueError: when it is not true that 1 <= d <= p
         ValueError: when d and p are not coprime (p should be prime!)
 
     Returns:
-        tuple[int, int] | None: either (x, y) such that x^2 + dy^2 = m, or None if no solution exists
+        tuple[int, int] | None: either (x, y) such that x^2 + dy^2 = p, or None if no solution exists
     """
+
+    if p % 2 == 0:
+        raise ValueError("p must be an odd prime")
 
     if not (1 <= d < p):
         raise ValueError("1 <= d < p must be true")
@@ -189,7 +196,7 @@ def cornacchias(d: int, p: int):
         return None
 
     if j == 0:
-        raise ValueError("p should be prime")
+        raise ValueError("p must be an odd prime")
 
     x0 = tonelli_shanks(-d, p)
     if 2 * x0 < p:
@@ -203,10 +210,10 @@ def cornacchias(d: int, p: int):
         a, b = b, a % b
 
     t = p - b**2
-    if t % d != 0:
+    td = t // d
+    if td * d != t:
         return None
 
-    td = t // d
     srtd = isqrt(td)
     if srtd**2 != td:
         return None
